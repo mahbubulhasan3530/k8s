@@ -79,8 +79,6 @@ containerd config default \
 sudo systemctl restart containerd
 ## Step 5: Kubernetes Repository
 
-### 1. Update Repository and Install Dependencies
-
 ```bash
 # Install necessary packages
 sudo apt update
@@ -88,11 +86,7 @@ sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
 # Create GPG keyrings directory
 sudo mkdir -p /etc/apt/keyrings
-```
 
-### 2. Add Kubernetes v1.35 GPG Key and Repository
-
-```bash
 # Add Kubernetes GPG key and repository for v1.35
 sudo rm -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
