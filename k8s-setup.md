@@ -77,6 +77,9 @@ containerd config default \
 
 # Restart and enable containerd
 sudo systemctl restart containerd
+sudo systemctl enable containerd
+```
+
 ## Step 5: Kubernetes Repository
 
 ```bash
