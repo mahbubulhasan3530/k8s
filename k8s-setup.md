@@ -1,30 +1,31 @@
-```
-#kubernetes 1.35 cluster setup (part-1: common setup)
+# Kubernetes 1.35 Cluster Setup (Part-1: Common Setup)
 
-##Step 1: Hostname setup (Optional but Recommended)
-```
+## Step 1: Hostname Setup (Optional but Recommended)
+
+```bash
 sudo hostnamectl set-hostname master-node
 
-hostnamectl```
-
-
-##Step 2: Disable swap
+hostnamectl
 ```
-# Disable swap immediately
 
+
+## Step 2: Disable Swap
+
+```bash
+# Disable swap immediately
 sudo swapoff -a
 
 # Disable swap permanently
-
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
-# verify swap is disabled
-
-free -h```
-
-
-##Step 3: Configure Kernel Modules and System Settings
+# Verify swap is disabled
+free -h
 ```
+
+
+## Step 3: Configure Kernel Modules and System Settings
+
+```bash
 # Make kernel modules persistent
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
@@ -35,7 +36,6 @@ EOF
 sudo modprobe overlay
 sudo modprobe br_netfilter
 
-
 # Configure sysctl parameters
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-iptables  = 1
@@ -45,21 +45,23 @@ EOF
 
 # Apply sysctl settings
 sudo sysctl --system
-
-sudo sysctl -w net.ipv4.ip_forward=1```
-
-##Verify IP forwarding:
+sudo sysctl -w net.ipv4.ip_forward=1
 ```
+
+## Verify IP Forwarding
+
+```bash
 lsmod | grep br_netfilter
 sysctl net.ipv4.ip_forward
 
-if the value 1 of net.ipv4.ip_forward then oky```
-
-
-
-##Step 4: Install Container Runtime (Containerd)
-
+# If the value is 1 for net.ipv4.ip_forward then OK
 ```
+
+
+
+## Step 4: Install Container Runtime (Containerd)
+
+```bash
 # Update system packages
 sudo apt update && sudo apt upgrade -y
 
@@ -75,22 +77,22 @@ containerd config default \
 
 # Restart and enable containerd
 sudo systemctl restart containerd
-sudo systemctl enable containerd ```
+## Step 5: Kubernetes Repository
 
-##Step 5: Kubernetes Repository
+### 1. Update Repository and Install Dependencies
 
-```
-#1.Update Repository and Install Dependencies
-
+```bash
 # Install necessary packages
 sudo apt update
 sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
 # Create GPG keyrings directory
 sudo mkdir -p /etc/apt/keyrings
+```
 
-#2. Add Kubernetes v1.35 GPG Key and Repository
+### 2. Add Kubernetes v1.35 GPG Key and Repository
 
+```bash
 # Add Kubernetes GPG key and repository for v1.35
 sudo rm -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
@@ -101,14 +103,13 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 # Update package list to recognize the new version
 sudo apt update
 
-
-#Now verification of kubernetes repo
-
-cat /etc/apt/sources.list.d/kubernetes.list```
-
-##Step 6: Kubernetes Components Install
-
+# Verify kubernetes repo
+cat /etc/apt/sources.list.d/kubernetes.list
 ```
+
+## Step 6: Kubernetes Components Install
+
+```bash
 # Install kubeadm, kubelet, and kubectl
 
 # Update package index and install Kubernetes components
@@ -120,12 +121,9 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 # Enable kubelet
 sudo systemctl enable kubelet
-
 ```
 
-
-
-##Kubernetes 1.35 Cluster Setup (Part 2: Master Node Setup)
+## Kubernetes 1.35 Cluster Setup (Part 2: Master Node Setup)
 
 
 
