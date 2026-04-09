@@ -120,8 +120,84 @@ sudo apt-mark hold kubelet kubeadm kubectl
 sudo systemctl enable kubelet
 ```
 
-## Kubernetes 1.35 Cluster Setup (Part 2: Master Node Setup)
+# Kubernetes 1.35 Cluster Setup (Part 2: Master Node Setup)
 
+## Step 7: Initialize the Kubernetes Cluster
 
+```bash
+# Find your master node IP address
+ip addr show
 
+# Initialize the cluster (replace with your actual master IP)
+sudo kubeadm init \
+  --apiserver-advertise-address=<YOUR_MASTER_IP> \
+  --pod-network-cidr=192.168.0.0/16
+  ```
+  **🔥 CRITICAL**: Save the `kubeadm join` command from the output!
 
+  
+## Step 8: Configure kubectl Access
+
+```bash
+# Setup kubectl configuration
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+## Cilium install (CNI Plugin)
+
+```bash
+# Cilium CLI version find out and download it.
+CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)
+CLI_ARCH=amd64
+if [ "$(uname -m)" = "aarch64" ]; then CLI_ARCH=arm64; fi
+
+curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
+sudo tar -xzvf cilium-linux-${CLI_ARCH}.tar.gz -C /usr/local/bin
+rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+
+# Cilium version check
+cilium version
+
+# Cilium install with appropiate version.
+cilium install --version v1.18.1 #choose from the last command (cilium version)_
+
+# Status check
+cilium status
+```
+
+## Step 10: Allow Scheduling on Master (Optional)
+
+```bash
+# Remove taint to allow pod scheduling on master
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+```
+
+### Step 11: Join Worker Nodes
+
+1. **Join the cluster** using the command from Step 7:
+
+```bash
+# Use the exact command from your master node initialization
+sudo kubeadm join <MASTER_IP>:6443 --token <TOKEN> \
+    --discovery-token-ca-cert-hash sha256:<HASH>
+```
+
+## Verification
+
+```bash
+# Check all nodes are ready
+kubectl get nodes
+
+# Check all system pods are running
+kubectl get pods --all-namespaces
+
+# Test with sample application
+kubectl create deployment test-nginx --image=nginx
+kubectl get pods
+
+# Clean up test
+kubectl delete deployment test-nginx
+```
