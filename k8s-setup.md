@@ -198,6 +198,11 @@ kubectl get pods --all-namespaces
 kubectl create deployment test-nginx --image=nginx
 kubectl get pods
 
+#expose the port 
+kubectl expose deployment test-nginx --port=80 --target-port=80 --type=NodePort
+
 # Clean up test
 kubectl delete deployment test-nginx
+
+kubectl delete svc test-nginx
 ```
